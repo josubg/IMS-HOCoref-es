@@ -36,6 +36,8 @@ public abstract class Language implements Serializable {
 			Language.lang=new Chinese();
 		} else if(lang.startsWith("ara")) {
 			Language.lang=new Arabic();
+		} else if(lang.startsWith("es")) {
+			Language.lang=new Spanish();
 		} else {
 			throw new RuntimeException("Unknown language: "+lang);
 		}

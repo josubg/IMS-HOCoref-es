@@ -18,10 +18,7 @@ import ims.hotcoref.data.Sentence;
 import ims.hotcoref.data.Span;
 import ims.hotcoref.io.DocumentReader;
 import ims.hotcoref.io.ReaderWriterFactory;
-import ims.hotcoref.lang.Arabic;
-import ims.hotcoref.lang.Chinese;
-import ims.hotcoref.lang.English;
-import ims.hotcoref.lang.Language;
+import ims.hotcoref.lang.*;
 import ims.util.ThreadPoolSingleton;
 
 //"it"
@@ -278,6 +275,8 @@ public class NonReferentialPruner extends AbstractMarkableExtractor{
 			return NonReferentialClassifier.DEFAULT_CHI_TARGETS;
 		} else if(l instanceof Arabic){
 			return NonReferentialClassifier.DEFAULT_ARA_TARGETS;
+		} else if(l instanceof Spanish){
+			return NonReferentialClassifier.DEFAULT_ES_TARGETS;
 		} else {
 			throw new RuntimeException("!");
 		}

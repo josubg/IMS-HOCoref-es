@@ -11,7 +11,7 @@ import ims.hotcoref.headrules.HeadRules.Rule;
 
 public class HeadFinder {
 
-	private final Map<String,HeadRules> m;
+	protected final Map<String,HeadRules> m;
 	
 	public HeadFinder(Map<String,HeadRules> m){
 		this.m=m;

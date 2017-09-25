@@ -49,7 +49,8 @@ public class NonReferentialClassifier implements ITokenNonReferentialClassifier 
 	public static final List<String> PADJ = Arrays.asList(new String[]{"interesting","safe","built","impossible","shameful","ok","okay","clear","unclear","easier","better","late","awful","terrible","difficult","hard","unlikely","early","surprising"});
 	public static final List<String> PADJ2 = Arrays.asList(new String[]{"same","hard","important","necessary","difficult"});
 
-	public static Set<String> DEFAULT_ENG_TARGETS = new TreeSet<String>(Arrays.asList(new String[]{"it","you","we"})); 
+	public static Set<String> DEFAULT_ENG_TARGETS = new TreeSet<String>(Arrays.asList(new String[]{"it","you","we"}));
+	public static Set<String> DEFAULT_ES_TARGETS = new TreeSet<String>(Arrays.asList(new String[]{"eso","tu","nosotros"}));
 	// they
 	public static Set<String> DEFAULT_CHI_TARGETS = new TreeSet<String>(Arrays.asList(new String[]{"你","中国"}));
 	//我们 TP=97 FP=79 FN=113

@@ -43,14 +43,21 @@ public class Decoder implements Serializable {
 //		this.guidedCount=guidedCount;
 	}
 	
-	public CorefSolution hotState2CS(HOTState hs,Instance inst){
+	public CorefSolution hotState2CS(HOTState hs,Instance inst, boolean writeSingletons){
 		CorefSolution cs=new CorefSolution();
 		int[] heads=hs.heads;
-		for(int i=2;i<heads.length;++i){
+		for(int i=1;i<heads.length;++i){
 			if(heads[i]!=0){
 				MNode head=(MNode) inst.nodes[heads[i]];
 				MNode dep =(MNode) inst.nodes[i];
 				cs.addLink(head.span,dep.span);
+			}
+			else{
+				if (writeSingletons){
+					// Genereate one auto ref for singletons
+					MNode head=(MNode) inst.nodes[i];
+					cs.addSingleton(head.span);
+				}
 			}
 		}
 		return cs;

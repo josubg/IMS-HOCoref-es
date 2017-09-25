@@ -119,9 +119,9 @@ public class GoldStandardChainExtractor {
 	public static void extractGoldSpans(Sentence s,Set<Span> sink){
         Map<Integer,List<Integer>> m=new TreeMap<Integer,List<Integer>>(); //This maps CorefIDs to a list of start tokens
 		for(int i=1;i<s.forms.length;++i){
-			if(BLANK.matcher(s.corefCol[i]).matches())
+			if(BLANK.matcher(s.corefColBak[i]).matches())
                 continue;
-			String[] entries=BAR.split(s.corefCol[i]);
+			String[] entries=BAR.split(s.corefColBak[i]);
 			for(String e:entries){
                 Matcher m1=ONE_TOKEN.matcher(e);
                 if(m1.matches()){

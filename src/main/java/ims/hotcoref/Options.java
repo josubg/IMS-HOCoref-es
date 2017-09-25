@@ -82,6 +82,8 @@ public class Options {
 	 */
 	@Option(name="-dontClearSpans",usage="Don't clear spans (needs more memory)")
 	public static boolean dontClearSpans=false;
+	@Option(name="-writeSingletons",usage="Don't clear singletons")
+	public static boolean writeSingletons =false;
 	/*
 	 * end other runtime things
 	 */

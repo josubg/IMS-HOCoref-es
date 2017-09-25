@@ -11,11 +11,14 @@ public class MarkableExtractorFactory {
 
 	
 	public static ChainedExtractor getChainedExtractor(String[] n){
+		System.out.println("Loading extractors");
 		if(ArrayFunctions.sameTwice(n))
 			throw new RuntimeException("Same markable extractor twice!");
 		IMarkableExtractor[] ex=new IMarkableExtractor[n.length];
-		for(int i=0;i<n.length;++i)
+		for(int i=0;i<n.length;++i){
 			ex[i]=getSingleExtractor(n[i]);
+			System.out.println("Loaded extractor: " + ex[i].toString());
+		}
 		return new ChainedExtractor(ex);
 	}
 	
@@ -35,8 +38,9 @@ public class MarkableExtractorFactory {
 	//NER-LABEL, -- NER's with that label
 	//NER-ALL, -- All NER's
 	
-	static final Pattern NT_PATTERN=Pattern.compile("^NT-([a-zA-Z]+)$");
+	static final Pattern NT_PATTERN=Pattern.compile("^NT-([a-zA-Z.]+)$");
 	static final Pattern T_PATTERN=Pattern.compile("^T-([a-zA-Z\\$]+)$");
+	static final Pattern T_SW_PATTERN=Pattern.compile("^T-SW-([a-zA-Z\\$]+)$");
 	static final Pattern ST_PATTERN=Pattern.compile("^ST-([a-zA-Z\\$]+)$");
 	static final Pattern NER_PATTERN=Pattern.compile("^NER-([a-zA-Z]+)$");
 	private static IMarkableExtractor getSingleExtractor(String name) {
@@ -46,6 +50,9 @@ public class MarkableExtractorFactory {
 		Matcher m2=T_PATTERN.matcher(name);
 		if(m2.matches())
 			return new TerminalExtractor(m2.group(1));
+		m2=T_SW_PATTERN.matcher(name);
+		if(m2.matches())
+			return new TerminalExtractorSW(m2.group(1));
 		Matcher m3=ST_PATTERN.matcher(name);
 		if(m3.matches())
 			return new SubTreeExtractor(m3.group(1));
@@ -58,6 +65,8 @@ public class MarkableExtractorFactory {
 		}
 		if(name.equalsIgnoreCase("LeftConjuncts"))
 			return new LeftDepConjunctExtractor();
+		if(name.equalsIgnoreCase("Gold"))
+			return getGoldExtractor(null, false);
 		if(name.equals("NonReferential"))
 			return new NonReferentialPruner();
 		if(name.equalsIgnoreCase("StandAloneDemonstrative"))

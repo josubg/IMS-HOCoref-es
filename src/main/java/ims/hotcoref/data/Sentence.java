@@ -24,6 +24,7 @@ public class Sentence {
 	public final CFGTree ct;
 	public final List<NE> nes;
 	public final String[] corefCol;
+	public String[] corefColBak;
 	public final String[] speaker;
 	public final String[] wholeForm;
 	public final String[] bwuv;
@@ -49,6 +50,7 @@ public class Sentence {
 		this.feats=feats;
 		this.dt=depTree;
 		this.corefCol=corefs;
+		this.corefColBak=corefs;
 		this.speaker=speaker;
 		this.neCol=neCol;
 		this.cfgCol=cfgCol;
@@ -80,6 +82,7 @@ public class Sentence {
 	private static final String HYPHEN="-";
 	private static final String BAR="|";
 	public void clearCorefCol(){
+		corefColBak= corefCol.clone();
 		for(int i=1;i<corefCol.length;++i){
 			corefCol[i]=HYPHEN;
 		}

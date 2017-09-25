@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
 
 public class CFGTree {
 
-	private static final Pattern NEWPHRASE_PATTERN=Pattern.compile("^\\(([a-zA-Z]+)");
+	private static final Pattern NEWPHRASE_PATTERN=Pattern.compile("^\\(([a-zA-Z.]+)");
 	private static final Pattern ENDPHRASE_PATTERN=Pattern.compile("^\\*?\\)");
 	
 	private final Sentence s;

@@ -49,7 +49,16 @@ public class CorefSolution {
 			m.put(c.chainId, c);
 		return m;
 	}
-	
+
+	public void addSingleton(Span a){
+		//We have a problem when a begins before b begins, and a ends before b ends. then they will get mashed...
+
+
+		Integer chainId=idCounter++;
+		Chain ch=new Chain(chainId,a);
+		chainMap.put(chainId, ch);
+		span2int.put(a, chainId);
+	}
 	public void addLink(Span a,Span b){
 		//We have a problem when a begins before b begins, and a ends before b ends. then they will get mashed...
 		

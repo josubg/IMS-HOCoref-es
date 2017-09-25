@@ -29,6 +29,8 @@ public class HeadRules {
 	
 	public static enum Direction {
 		LeftToRight,
-		RightToleft
+		RightToleft,
+		RightDis,
+		LeftDis
 	}
 }

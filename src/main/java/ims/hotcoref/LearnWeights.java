@@ -117,7 +117,7 @@ public class LearnWeights {
 				File outFile=new File(options.out.toString()+".i"+Util.padZerosFront(padding, iter+1));
 				DocumentReader testRead=ReaderWriterFactory.getReader(options.inputFormat, options.in2, options.inGz, options.inputEnc);
 				DocumentWriter testWrite=ReaderWriterFactory.getWriter(options.outputFormat, outFile, options.outGz, options.outputEnc);
-				Test.test(testRead, testWrite, d2, ic, options.graphOutDir, options.beam, options.ignoreSingletons, options.drawLatentHeads, options.ignoreRoot,false,null,null);
+				Test.test(testRead, testWrite, d2, ic, options.graphOutDir, options.beam, options.ignoreSingletons, options.drawLatentHeads, options.ignoreRoot,false,null,null, options.writeSingletons);
 				testWrite.close();
 				tryScore(options.in2,outFile,options.scorerHost,options.scorerPort);
 				if(fs.higherOrder)
@@ -156,7 +156,7 @@ public class LearnWeights {
 			DBO.println("Testing model: "+options.in2.toString()+" -> "+options.out.toString());
 			DocumentReader testRead=ReaderWriterFactory.getReader(options.inputFormat, options.in2, options.inGz, options.inputEnc);
 			DocumentWriter testWriter=ReaderWriterFactory.getOutputWriter(options);
-			ErrorAnalysis ea=Test.test(testRead, testWriter, decoder, ic,options.graphOutDir,options.beam,options.ignoreSingletons,options.drawLatentHeads,options.ignoreRoot,options.errorAnalysis,null,null);
+			ErrorAnalysis ea=Test.test(testRead, testWriter, decoder, ic,options.graphOutDir,options.beam,options.ignoreSingletons,options.drawLatentHeads,options.ignoreRoot,options.errorAnalysis,null,null,options.writeSingletons);
 			if(ea!=null){
 				System.out.println();
 				ea.output(System.out);

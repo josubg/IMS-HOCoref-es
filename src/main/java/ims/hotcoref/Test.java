@@ -36,7 +36,7 @@ import ims.util.ZipUtil;
 
 public class Test {
 
-	public static ErrorAnalysis test(DocumentReader reader,DocumentWriter writer,Decoder decoder,InstanceCreator ic,File graphOutDir, int beam,boolean ignoreSingletonsGraphOut,boolean drawLatentHeads,boolean ignoreRoot,boolean doErrorAnalysis,CorefTreeWriter predTreeWriter,CorefTreeWriter goldTreeWriter) throws IOException, InterruptedException, ExecutionException{
+	public static ErrorAnalysis test(DocumentReader reader,DocumentWriter writer,Decoder decoder,InstanceCreator ic,File graphOutDir, int beam,boolean ignoreSingletonsGraphOut,boolean drawLatentHeads,boolean ignoreRoot,boolean doErrorAnalysis,CorefTreeWriter predTreeWriter,CorefTreeWriter goldTreeWriter, boolean writeSingletons) throws IOException, InterruptedException, ExecutionException{
 		if(drawLatentHeads)
 			Options.dontInjectGold=true;
 		DBO.printWithPrefix("Doc:  ");
@@ -66,7 +66,7 @@ public class Test {
 			HOTState prediction=decoder.corefMST(inst, beam);
 			if(predTreeWriter!=null)
 				predTreeWriter.writeTree(prediction, d, inst,"Pred");
-			CorefSolution cs=decoder.hotState2CS(prediction, inst);
+			CorefSolution cs=decoder.hotState2CS(prediction, inst, writeSingletons);
 			d.setCorefCols(cs.getKey());
 			writer.write(d);
 			if(outGraph){
@@ -320,6 +320,11 @@ public class Test {
 		Language lang=ZipUtil.loadObjectFromEntry(Language.ZIP_ENTRY, options.model, Language.class);
 		Language.setLanguage(lang);
 		InstanceCreator ic=ZipUtil.loadObjectFromEntry(InstanceCreator.ZIP_ENTRY, options.model, InstanceCreator.class);
+		System.out.println("markables: " + ic.markableExtractor.toString());
+
+		if (options.writeSingletons){
+			System.out.println("Writing Singletons");
+		}
 		CorefTreeWriter goldTreeWriter=null;
 		CorefTreeWriter predTreeWriter=null;
 		if(options.outIcarusTrees){
@@ -329,7 +334,7 @@ public class Test {
 			goldTreeWriter=new CorefTreeWriter(outGoldTree,prefix);
 			predTreeWriter=new CorefTreeWriter(outPredTree,prefix);
 		}
-		ErrorAnalysis r=test(reader,writer,decoder,ic,options.graphOutDir,options.beam,options.ignoreSingletons,options.drawLatentHeads,options.ignoreRoot,options.errorAnalysis,predTreeWriter,goldTreeWriter);
+		ErrorAnalysis r=test(reader,writer,decoder,ic,options.graphOutDir,options.beam,options.ignoreSingletons,options.drawLatentHeads,options.ignoreRoot,options.errorAnalysis,predTreeWriter,goldTreeWriter, options.writeSingletons);
 		writer.close();
 		if(options.outIcarusTrees){
 			goldTreeWriter.close();
