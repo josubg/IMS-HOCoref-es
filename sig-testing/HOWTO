@@ -1,0 +1,22 @@
+Doing sig testing on two files:
+
+ $ ./make_tabular.sh <gold> <pred1> [<metric>]
+ $ ./make_tabular.sh <gold> <pred2> [<metric>]
+
+where metric is either 'muc', 'bcub', 'ceafe', 'ceafm', 'conll', or
+'all', where all is all four. if <metric> is omitted, 'all' is used.
+(we never used blanc, since they were not part of the v7 scorer)
+
+for each metric, make_tabular.sh creates a new file:
+<predX>.doctab.{muc,bcub,ceafe,ceafm}
+
+
+then do the sig testing by running
+
+ $ ./sigstat.m <pred1>.doctab.<metric> <pred2>.doctab.<metric>
+
+if you want to change the p-value, you have to edit the sigstat.m and
+set the value differently.
+
+--
+ab, 2014-03-10

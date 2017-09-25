@@ -1,0 +1,236 @@
+How to run the system and replicate the experiments from the paper
+"Learning Structured Perceptrons with Latent Antecedents and Non-local
+Features" by Anders Björkelund and Jonas Kuhn (ACL 2014).
+
+=== PREREQUISITES ===
+You will need to have 
+1) the CoNLL 2012 data, as it is assembled after running the
+skeleton2conll scripts provided on the Shared Task website.
+2) the gender and number data from Bergsma and Lin (also provided on
+the CoNLL website)
+
+=== Scripts you need to edit ===
+1) Put the correct paths to the CoNLL data in SETUP.sh
+2) Put the correct path to the gender and number data in LANG_ENV.sh
+
+=== Setup ===
+1) Assemble the data into single files. To do this run the SETUP.sh
+script. (It will create a folder './data' where it will put all the
+stuff)
+2) You might want to set the JVM memory and number of cores used in
+GLOBAL_PARAMS.sh. That's also where the beam size is set (which for
+all experiments except the learning curves is always 20).
+
+=== Replication of Experiments ===
+1) The numbers for the big table (test set results, Table 2) and the
+small table (development set results, Table 1). Run the script
+train_test_all.sh
+
+2) The numbers for the learning curves (Figure 3). Run the script
+learning_curves.sh
+
+3) The numbers for the bar plots (Figure 4). Run the script
+bar_plot.sh
+
+If you are having problems replicating the experiments from the paper
+above, see 'Sanity checks for replication' below.
+
+=== General notes on how to train/test the system ===
+== Training ==
+Here's to train and test the using the system in the general
+setting. If you're only using local features, no beam search or
+delayed laso is required, and it's generally pretty fast. Then you'd
+do something like the following:
+
+$ java -Xmx20g -cp ... ims.hotcoref.LearnWeights -lang <lang> -in <train-file> -model <model-file> -features <feature-file> -cores <cores> 
+
+where <lang> is either {ara,chi,eng}, <train-file> is a full
+concatenation of your training data (internally documents are
+shuffled, since the perceptron is an online algorithm, and if the
+documents are ordered by genre that leads to a big drop), <model-file>
+is the model that will be output, <feature-file> is a file containing
+feature definitions, and <cores> is the number of cores (threads) the
+system will use. The classpath (...) above should include all jars in
+this archive (ims-hotcoref.jar and all jars in ./lib), see CLASSPATH
+below for more details.
+
+Additionally you have to pass the following parameter for English:
+-gender <gender-data>
+
+where <gender-data> is the Bergsma & Lin gender data.
+
+For Arabic you have to pass the following parameter:
+-dontClearSpans
+
+
+If you want to train the non-local model you need to pass a few more
+arguments in addition to what's listed above:
+-delayUpdates -beamEarlyIter -beam <beam-size>
+
+where <beam-size> is the beam size (we used 20).
+
+
+The feature files are located in the directory 'features', and are
+named {ara,chi,eng}-fo-opt for the local model, and {ara,chi}-nho6-opt
+and eng-nho7-opt for the non-local models. The additional files with
+the suffix -bnf are the feature sets from Björkelund and Farkas (2012)
+(as a baseline, they're also only local features, and are not as good
+as the ones in ...-fo-opt).
+
+
+Example training of English local model:
+
+$ java -Xmx20g -cp ... ims.hotcoref.LearnWeights -lang eng -in /corpora/eng_train_v4_auto_conll -model ./eng_train_v4_auto_conll-eng-fo-opt.mdl -features ./features/eng-fo-opt -gender /corpora/gender.data.gz -cores 10
+
+Example training of Chinese non-local model:
+
+$ java -Xmx20g -cp ... ims.hotcoref.LearnWeights -lang chi -in /corpora/chi_train_v4_auto_conll -model ./chi_train_v4_auto_conll-chi-nho6-opt.mdl -features ./features/chi-nho6-opt -cores 10 -delayUpdates -beamEarlyIter -beam 20
+
+== TESTING ==
+The <model-file> can then be applied during testing by doing something
+like this:
+
+$ java -Xmx20g -cp ... ims.hotcoref.Test -in <test-file> -model <model-file> -out <out-file> -cores <cores>
+
+where <out-file> is the output file, and the others the same as above.
+
+
+A non-local model also needs the beam size passes during testing:
+-beam <beam-size>
+
+Example testing with English local model (trained with the example
+above):
+
+$ java -Xmx20g -cp ... ims.hotcoref.Test -in /corpora/eng_dev_v4_auto_conll -model ./eng_train_v4_auto_conll-eng-fo-opt.mdl -out ./eng_dev_v4_auto_conll-eng-fo-opt.out -cores 10
+
+Example testing with Chinese non-local model (trained with the example
+above):
+
+$ java -Xmx20g -cp ... ims.hotcoref.Test -in /corpora/chi_dev_v4_auto_conll -model ./chi_train_v4_auto_conll-chi-nho6-opt.mdl -out ./chi_dev_v4_auto_conll-chi-nho6-opt.out -cores 10 -beam 20
+
+=== CLASSPATH ===
+
+The classpath always needs to include all jars in this archive. So,
+assuming you are located in the same directory as this file, '...'
+above should be expanded like this:
+
+$ java -Xmx20g -cp ./ims-hotcoref.jar:./lib/jaws-bin.jar:./lib/args4j-20120919.jar:./lib/mallet.jar:./lib/mallet-deps.jar:./lib/trove-3.0.3.jar ims.hotcoref.LearnWeights ......
+
+=== How to get ICARUS output ===
+HOTCoref supports outputting trees following the format that can be
+read by the ICARUS Coreference Explorer (ICE; Gärtner et al.,
+2014). It can output both predicted trees, as well as constrained
+"gold" trees (where the output is restricted to encode the gold
+standard clustering provided in the input file).
+
+To get trees for the prediction only add the switch -icarusOut while
+testing, e.g.,
+
+$ java -Xmx20g -cp ... ims.hotcoref.Test -in /corpora/eng_dev_v4_auto_conll -model ./eng_train_v4_auto_conll-eng-fo-opt.mdl -out ./eng_dev_v4_auto_conll-eng-fo-opt.out -cores 10 -icarusOut
+
+will create an additional file
+./eng_dev_v4_auto_conll-eng-fo-opt.out.PRED.icarus containing the
+trees, in the ICARUS format.
+
+To also get gold trees, add the switch -drawLatentHeads as well, e.g.,
+
+$ java -Xmx20g -cp ... ims.hotcoref.Test -in /corpora/eng_dev_v4_auto_conll -model ./eng_train_v4_auto_conll-eng-fo-opt.mdl -out ./eng_dev_v4_auto_conll-eng-fo-opt.out -cores 10 -icarusOut -drawLatentHeads
+
+will create both 
+./eng_dev_v4_auto_conll-eng-fo-opt.out.PRED.icarus and
+./eng_dev_v4_auto_conll-eng-fo-opt.out.GOLD.icarus
+
+=== Sanity checks for replication ===
+In order to exactly replicate the experiments a requirement is that
+all input files are identical to what I used. Note that this also
+includes that the order of the documents within the files have to be
+identical (the SETUP.sh script should ensure this).
+
+I cannot redistribute the actual data, but below is a bunch of MD5
+checksums on the training files I used. If you don't have identical
+checksums, then your input is different from mine, and you shouldn't
+expect to get the same numbers.
+
+If you are getting the same checksums (also on the output files), but
+not the same accuracy numbers, then you're probably using a different
+version of the scoring script. The one I was using (v7, latest at the
+time of publication), is included in this package. (Also here the
+scripts train_test_all.sh, learning_curves.sh, and bar_plot.sh should
+ensure that this scorer is being used)
+
+Here are my checksums on input files (what is produced from SETUP.sh):
+$ md5sum ./data/*
+476df4c181e3aaca848bd063c656731b  ./data/ara_dev_v4_auto_conll
+ce248014fc9f7f1ad3650aa61b2e5d55  ./data/ara_test_v4_gold_conll
+01e4b659ab8f657fd6aa87574935a335  ./data/ara_test_v9_auto_conll
+3e834bb9a3919cfbdb83fdd6afeaf771  ./data/ara_train_v4_auto_conll
+dbb0a6405f70a5995fbbe99a8da8ebd8  ./data/ara_train_v4_auto_conll+ara_dev_v4_auto_conll
+1c32292a7991746a5afc80d34d2ed572  ./data/chi_dev_v4_auto_conll
+d1615baad961cfaeafe84a1e98474935  ./data/chi_test_v4_gold_conll
+9afea948802de954c80bca78db10c7e0  ./data/chi_test_v9_auto_conll
+37720a42f2dcf0581671574f593f61e6  ./data/chi_train_v4_auto_conll
+883715d16ceb97fc1825e4fb72565c99  ./data/chi_train_v4_auto_conll+chi_dev_v4_auto_conll
+b8aaf724fb5ac095a712d04cc0afd14f  ./data/eng_dev_v4_auto_conll
+6e64b649a039b4320ad32780db3abfa1  ./data/eng_test_v4_gold_conll
+84a26ab11e952d414ab2b16270b54984  ./data/eng_test_v9_auto_conll
+058536aafacc96d756f36eb9d2db5531  ./data/eng_train_v4_auto_conll
+bf85980ce05f34ed6ab94684adf2d735  ./data/eng_train_v4_auto_conll+eng_dev_v4_auto_conll
+
+And here are checksums on all the output files (Tables 1 and 2):
+$ md5sum ./experiments/*/*.out
+9cb1ef2f173762219f2aa95e97d7d42a  ./experiments/train-ara-fo-opt/dev.out
+7503e19de9f68b8ab09c6ddad68e36c0  ./experiments/train-ara-fo-opt/test.out
+6fbfa72f1b0f397301de045aa629c5b9  ./experiments/train-ara-nho6-opt/dev.out
+a16c66e23cc8f056ad65023e36a3af4c  ./experiments/train-ara-nho6-opt/test.out
+58af4e5818e95b8a47c056ec8d1b495d  ./experiments/train-chi-fo-opt/dev.out
+0b92277d819695e1c3d826bacccfa34a  ./experiments/train-chi-fo-opt/test.out
+2f2ead2bea9c23d00160c908eed205b6  ./experiments/train-chi-nho6-opt/dev.out
+2f068785f74332abd478aabe36117269  ./experiments/train-chi-nho6-opt/test.out
+9593a92ddad112f0388a59d1e17511f0  ./experiments/train+dev-ara-fo-opt/dev.out
+8bbc0bbdb6e9e5481d7384ae39532966  ./experiments/train+dev-ara-fo-opt/test.out
+e9f3b35ac3992d1d204616b13e3bcb3a  ./experiments/train+dev-ara-nho6-opt/dev.out
+ac149f5bc1686848f39010008c5aa2a3  ./experiments/train+dev-ara-nho6-opt/test.out
+ddf5824293d795fe8d2c2bca9ba8879d  ./experiments/train+dev-chi-fo-opt/dev.out
+b2d04cd8429d8c592dbfffe202794cef  ./experiments/train+dev-chi-fo-opt/test.out
+647b9c18c16d4a972a938e8f0d815d6e  ./experiments/train+dev-chi-nho6-opt/dev.out
+f8a35e121335a81d44f3458f02573d87  ./experiments/train+dev-chi-nho6-opt/test.out
+6f3dd64ebf1cfdede05deb9c742717b6  ./experiments/train+dev-eng-fo-opt/dev.out
+b92eca3504f1a2d6265fc2c916790336  ./experiments/train+dev-eng-fo-opt/test.out
+f5cb077502c9ce94224619badb65a171  ./experiments/train+dev-eng-nho7-opt/dev.out
+8ec257a8793b1db0cfd0b437f86181fc  ./experiments/train+dev-eng-nho7-opt/test.out
+51ebbe2cdd4c08e4af0dbd5c6b62cd15  ./experiments/train-eng-fo-opt/dev.out
+64746ad545ff290556b323ec0a219f14  ./experiments/train-eng-fo-opt/test.out
+d11b4f75297c98cd84f8055cbe8a70b0  ./experiments/train-eng-nho7-opt/dev.out
+5b40b6d5f9b2f33f64fd7f58927f4233  ./experiments/train-eng-nho7-opt/test.out
+
+Here's the checksum on the gender.data.gz:
+4225413f051696f2674ffdd6b340f14c  gender.data.gz
+
+I was using the following version of the GNU coreutils md5sum:
+$ md5sum --version
+md5sum (GNU coreutils) 8.21
+Copyright (C) 2013 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+Written by Ulrich Drepper, Scott Miller, and David Madore.
+
+=== References === 
+
+Anders Björkelund and Jonas Kuhn. Learning Structured Perceptrons for
+Coreference Resolution with Latent Antecedents and Non-local
+Features. ACL 2014.
+
+Markus Gärtner, Anders Björkelund, Gregor Thiele, Wolfgang Seeker, and
+Jonas Kuhn. Visualization, Search, and Error Analysis for Coreference
+Annotations. ACL 2014: Demonstrations.
+
+Anders Björkelund and Richárd Farkas. Data-driven Multilingual
+Coreference Resolution using Resolver Stacking. EMNLP-CoNLL 2012:
+Shared Task.
+
+
+--
+ab, 2014-06-06
+anders@ims.uni-stuttgart.de
